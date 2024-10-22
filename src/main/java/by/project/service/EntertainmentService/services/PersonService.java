@@ -24,7 +24,6 @@ public class PersonService {
 
     public Director findDirectorByName(String name) {
         return directorRepository.findByName(name).orElse(null);
-      //  return director.orElse(null);
     }
 
     public Person findPersonByName(String name) {

@@ -32,14 +32,14 @@ public class MoviesController {
     private final EntertainmentValidator entertainmentValidator;
 
     @Autowired
-    public MoviesController(EntertainmentService entertainmentService, ModelMapper modelMapper, EntertainmentValidator entertainmentValidator) {
+    public MoviesController(EntertainmentService entertainmentService, ModelMapper modelMapper, EntertainmentValidator entertainmentValidator)
+
+
+    {
         this.entertainmentService = entertainmentService;
         this.modelMapper = modelMapper;
         this.entertainmentValidator = entertainmentValidator;
     }
-
-
-
 
     @GetMapping()
     public ResponseEntity<?> getAllMovies(@RequestParam(value = "page", required = false) Integer page,

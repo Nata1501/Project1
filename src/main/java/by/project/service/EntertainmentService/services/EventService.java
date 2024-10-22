@@ -62,13 +62,12 @@ public class EventService {
 
 
     @Transactional
-    public void checkRelevance(Event event, int timeInMinutes ) {  ///////////////////////////////////////////////
+    public void checkRelevance(Event event, int timeInMinutes ) {
         Date currentDate = new Date();
         if (event.getDateTime().getTime() - currentDate.getTime() < timeInMinutes)
             event.setRelevance(false);
-        System.out.println("Аремя в минутах = " + (event.getDateTime().getTime() - currentDate.getTime()));
 
-       eventRepository.save(event);   // надо????
+       eventRepository.save(event);
     }
 
 
