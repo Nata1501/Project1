@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.6.xsd">
+
+    <changeSet id="create-table-entertainment" author="N">
+        <createTable tableName="entertainment">
+            <column name="id" type="int" autoIncrement="true">
+                <constraints nullable="false" primaryKey="true"/>
+            </column>
+            <column name="name" type="varchar(50)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="description" type="varchar(300)"/>
+            <column name="id_director" type="int">
+                <constraints foreignKeyName="entertainment_id_director_director_id" references="director(id)" deleteCascade="true"/>
+            </column>
+            <column name="type" type="int">
+                <constraints nullable="false"/>
+            </column>
+            <column name="genretype" type="int">
+                <constraints nullable="false"/>
+            </column>
+            <column name="duration" type="double">
+                <constraints nullable="false"/>
+            </column>
+            <column name="price" type="double">
+                <constraints nullable="false"/>
+            </column>
+            <column name="year" type="int">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+
+        <sql>
+            ALTER TABLE entertainment ADD CONSTRAINT check_duration CHECK (duration > 0)
+        </sql>
+
+        <sql>
+            ALTER TABLE entertainment ADD CONSTRAINT check_price CHECK (price >= 0)
+        </sql>
+
+        <sql>
+            ALTER TABLE entertainment ADD CONSTRAINT check_year CHECK (year >= 1895)
+        </sql>
+    </changeSet>
+
+</databaseChangeLog>

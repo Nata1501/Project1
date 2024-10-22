@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.6.xsd">
+
+    <changeSet id="create-table-user-event" author="N">
+        <createTable tableName="user_event">
+            <column name="id" type="int" autoIncrement="true">
+                <constraints nullable="false" primaryKey="true"/>
+            </column>
+            <column name="id_user" type="int">
+                <constraints foreignKeyName="user_event_id_user_users_id" references="users(id)"/>
+            </column>
+            <column name="id_event" type="int">
+                <constraints foreignKeyName="user_event_id_event_event_id" references="event(id)"/>
+            </column>
+            <column name="seat" type="int">
+                <constraints nullable="false"/>
+            </column>
+            <column name="service_fee" type="double"/>
+            <column name="payment_date_time" type="datetime">
+                <constraints nullable="false"/>
+            </column>
+            <column name="refund_date_time" type="datetime"/>
+        </createTable>
+
+
+        <addUniqueConstraint
+                columnNames="id_event, seat"
+                constraintName="user_event_unique_constraint"
+                tableName="user_event"
+        />
+
+
+        <sql>
+            ALTER TABLE user_event ADD CONSTRAINT check_seat CHECK (seat > 0)
+        </sql>
+    </changeSet>
+
+</databaseChangeLog>
