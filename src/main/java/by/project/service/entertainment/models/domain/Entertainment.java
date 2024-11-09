@@ -32,17 +32,17 @@ public class Entertainment {
     @Size(min = 10, max = 300, message = "Description should be between 10 and 300 characters")
     private String description;
 
-    @Enumerated(EnumType.STRING)
+    @Enumerated(EnumType.ORDINAL)
     @NotNull
     private Type type;
 
-    @Enumerated(EnumType.STRING)
+    @Enumerated(EnumType.ORDINAL)
     @NotNull
-    private GenreType genretype;  ////////////// String???????
+    private GenreType genretype;
 
-    @Min(value = 60, message = "Duration should be greater than 0 minutes")
     private Duration duration;
 
+    @Column(name = "date_time")
     @PastOrPresent
     private LocalDateTime dateTime;
 
@@ -50,6 +50,7 @@ public class Entertainment {
     private BigDecimal price;
 
     @ManyToOne
+    @JoinColumn(name = "id_director", referencedColumnName = "id")
     private Director director;
 
     @ManyToMany(mappedBy = "entertainments")

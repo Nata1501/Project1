@@ -2,11 +2,9 @@ package by.project.service.entertainment.services;
 
 
 import by.project.service.entertainment.exception.InsufficientFundsException;
+import by.project.service.entertainment.exception.ObjectFoundException;
+import by.project.service.entertainment.models.domain.*;
 import by.project.service.entertainment.util.ObjectNotFoundException;
-import by.project.service.entertainment.models.domain.Event;
-import by.project.service.entertainment.models.domain.MainAccount;
-import by.project.service.entertainment.models.domain.Order;
-import by.project.service.entertainment.models.domain.User;
 import by.project.service.entertainment.repositories.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
@@ -15,6 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -32,6 +31,13 @@ public class UserService {
         return userRepository.findAll();
     }
 
+    public List<User> findAll(Integer page, Integer usersPerPage) {
+        if ((page == null) || (usersPerPage == null))
+            return findAll();
+        else
+            return findAllWithPagination(page, usersPerPage);
+    }
+
 
     public List<User> findAllWithPagination(int page, int userPerPage) {
         return userRepository.findAll(PageRequest.of(page, userPerPage)).getContent();
@@ -39,25 +45,59 @@ public class UserService {
 
 
     public User findOne(Long id) {
-        Optional<User> user = userRepository.findById(id);
-        return user.orElse(null);
+        return userRepository.findById(id)
+                .orElseThrow(() -> new ObjectNotFoundException("User not found by ID: " + id));
     }
 
 
     public User findByLogin(String login) {
-        Optional<User> user = userRepository.findByLogin(login);
-        return user.orElse(null);
+        return userRepository.findByLogin(login)
+                .orElseThrow(() -> new ObjectNotFoundException("User not found by login: " + login));
+    }
+
+
+    private boolean ifLoginExist(String login) {
+        return !userRepository.findByLogin(login).isEmpty();
+    }
+
+
+    public boolean checkLoginExist(String login) {
+        if (ifLoginExist(login))
+            throw new ObjectFoundException("Login: " + login + " already taken");
+        else
+            return false;
+    }
+
+
+    private boolean ifEmailExist(String email) {
+        return !userRepository.findByEmail(email).isEmpty();
+    }
+
+
+    public boolean checkEmailExist(String email) {
+        if (ifEmailExist(email))
+            throw new ObjectFoundException("Email: " + email + " already taken");
+        else
+            return false;
     }
 
 
     public User findByEmail(String email) {
-        Optional<User> user = userRepository.findByEmail(email);
-        return user.orElse(null);
+        return userRepository.findByEmail(email)
+                .orElseThrow(() -> new ObjectNotFoundException("User not found by email: " + email));
     }
 
+    @Transactional
     public void saveUser(User user) {
+        validateUser(user);
         enrichUser(user);
         userRepository.save(user);
+    }
+
+
+    private void validateUser(User user) {
+        checkLoginExist(user.getLogin());
+        checkEmailExist(user.getEmail());
     }
 
 

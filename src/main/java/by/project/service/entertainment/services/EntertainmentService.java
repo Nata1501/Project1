@@ -1,6 +1,7 @@
 package by.project.service.entertainment.services;
 
 
+import by.project.service.entertainment.exception.ObjectFoundException;
 import by.project.service.entertainment.repositories.DirectorRepository;
 import by.project.service.entertainment.repositories.PersonRepository;
 import by.project.service.entertainment.util.EntertainmentException;
@@ -15,10 +16,10 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 
@@ -33,10 +34,15 @@ public class EntertainmentService {
     private final PersonService personService;
 
 
-
-
     public List<Entertainment> findAll(Type type) {
         return entertainmentRepository.findByType(type);
+    }
+
+    public List<Entertainment> findEntertainments(Integer page, Integer entertainmentsPerPage, Type type) {
+        if ((page == null) || (entertainmentsPerPage == null))
+            return findAll(type);
+        else
+            return findAllWithPagination(page, entertainmentsPerPage, type);
     }
 
 
@@ -47,8 +53,8 @@ public class EntertainmentService {
 
 
     public Entertainment findOne(Long id) {
-        Optional<Entertainment> entertainment = entertainmentRepository.findById(id);
-        return entertainment.orElse(null);
+        return entertainmentRepository.findById(id)
+                .orElseThrow(() -> new ObjectNotFoundException("Entertainment not found by ID: " + id));
     }
 
 
@@ -57,20 +63,41 @@ public class EntertainmentService {
                 .orElseThrow(() -> new ObjectNotFoundException("Entertainment not found by type: '" + type + "' and ID: " + id));
     }
 
+    public Entertainment findByName(String name) {
+        return entertainmentRepository.findByName(name)
+            .orElseThrow(() -> new ObjectNotFoundException("Entertainment not found by name: '" + name));
+    }
+
 
     public Entertainment findEntertainment(String name, Type type, LocalDateTime dateTime) {
         return entertainmentRepository.findByNameAndTypeAndDateTime(name, type, dateTime)
                 .orElseThrow(() -> new ObjectNotFoundException("Entertainment not found by name: " + name
-                        + ", type: " + type + " and dateTime: " + dateTime));
+                        + ", type: " + type + " and date: " + dateTime));
     }
 
 
-    @Transactional
+    private boolean ifExist(String name, Type type, LocalDateTime dateTime) {
+        return !entertainmentRepository.findByNameAndTypeAndDateTime(name, type, dateTime).isEmpty();
+    }
+
+
+    public boolean checkEntertainmentExist(String name, Type type, LocalDateTime dateTime) {
+        if (ifExist(name, type, dateTime))
+            throw new ObjectFoundException("Entertainment by name: " + name
+                    + ", type: " + type + " and date: " + dateTime + " exists");
+        else
+            return false;
+    }
+
+
+   @Transactional
     public void saveEntertainment(Entertainment entertainment, Type type) {
+        validateEntertainment(entertainment);
         entertainment.setType(type);
         enrichEntertainment(entertainment);
         entertainmentRepository.save(entertainment);
     }
+
 
 
     @Transactional
@@ -104,17 +131,22 @@ public class EntertainmentService {
     }
 
 
-    private void enrichEntertainment(Entertainment entertainment) {   //??????
+    private void enrichEntertainment(Entertainment entertainment) {
         entertainment.setDirector(personService.findDirectorByName(entertainment.getDirector().getName()));
 
         List<Person> personList = new ArrayList<>();
 
-        for(int i = 0; i < entertainment.getPerformers().size(); i++) {  // переписать через lambda???
+        for(int i = 0; i < entertainment.getPerformers().size(); i++) {
             Person person = personService.findPersonByName(entertainment.getPerformers().get(i).getName());
             personList.add(person);
             person.getEntertainments().add(entertainment);
         }
         entertainment.setPerformers(personList);
+    }
+
+    private void validateEntertainment(Entertainment entertainment) {
+        checkEntertainmentExist(entertainment.getName(), entertainment.getType(), entertainment.getDateTime());
+        personService.findDirectorByName(entertainment.getDirector().getName());
     }
 
 

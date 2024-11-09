@@ -1,10 +1,13 @@
 package by.project.service.entertainment.services;
 
+
+import by.project.service.entertainment.models.domain.Place;
 import by.project.service.entertainment.util.ObjectNotFoundException;
 import by.project.service.entertainment.models.domain.Event;
 import by.project.service.entertainment.models.domain.Type;
 import by.project.service.entertainment.repositories.EventRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,8 +25,17 @@ public class EventService {
     private final EntertainmentService entertainmentService;
     private final PlaceService placeService;
 
+
     public List<Event> findAll() {
         return eventRepository.findAll();
+    }
+
+
+    public List<Event> findEvents(Integer page, Integer eventsPerPage, Type type, boolean relevance) {
+        if ((page == null) || (eventsPerPage == null))
+            return findEvents(type, relevance);
+        else
+            return findEventsWithPagination(page, eventsPerPage, type, relevance);
     }
 
 
@@ -32,7 +44,7 @@ public class EventService {
     }
 
 
-    public List<Event> findEventsWithPagination(int page, int eventPerPage, Type type, boolean relevance) { // проверить работу
+    public List<Event> findEventsWithPagination(int page, int eventPerPage, Type type, boolean relevance) {
         return eventRepository.findAll(PageRequest.of(page, eventPerPage)).getContent()
             .stream().filter(event -> event.getType() == type && event.getRelevance() == relevance).collect(Collectors.toList());
     }
@@ -44,15 +56,12 @@ public class EventService {
     }
 
 
-    public List<Event> findByRelevance(boolean relevance) {
-        return eventRepository.findByRelevance(relevance);
-    }
-
-
+    @Transactional
     public void saveEvent(Event event) {
         enrichEvent(event);
         eventRepository.save(event);
     }
+
 
     public void checkAndUpdateRelevance(Long totalTime) {
         LocalDateTime currentDateTime = LocalDateTime.now();
@@ -68,7 +77,7 @@ public class EventService {
 
 
     private void enrichEvent(Event event) {
-        event.setEntertainment(entertainmentService.findOne(event.getEntertainment().getId()));
+        event.setEntertainment(entertainmentService.findByName(event.getEntertainment().getName()));
         event.setPlace(placeService.findPlaceByName(event.getPlace().getName()));
         event.setRelevance(true);
     }
@@ -76,10 +85,10 @@ public class EventService {
 
     @Transactional
     public void delete(Long id) {
-        Event event = eventRepository.findById(id)
-                .orElseThrow(() -> new ObjectNotFoundException("Object not found"));
+       Event event = eventRepository.findById(id)
+               .orElseThrow(() -> new ObjectNotFoundException("Event not found"));
 
-        eventRepository.deleteById(event.getId());
+       eventRepository.deleteById(event.getId());
     }
 
 }

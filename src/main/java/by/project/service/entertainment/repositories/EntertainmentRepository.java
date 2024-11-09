@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -15,6 +16,7 @@ public interface EntertainmentRepository extends JpaRepository<Entertainment, Lo
 
     List<Entertainment> findByType(Type type);
     Optional<Entertainment> findByTypeAndId(Type type, Long id);
-    Optional<Entertainment> findByNameAndTypeAndDateTime(String name, Type type, LocalDateTime year);
+    Optional<Entertainment> findByName(String name);
+    Optional<Entertainment> findByNameAndTypeAndDateTime(String name, Type type, LocalDateTime dateTime);
 
 }

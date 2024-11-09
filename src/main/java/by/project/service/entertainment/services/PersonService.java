@@ -5,6 +5,7 @@ import by.project.service.entertainment.models.domain.Director;
 import by.project.service.entertainment.models.domain.Person;
 import by.project.service.entertainment.repositories.DirectorRepository;
 import by.project.service.entertainment.repositories.PersonRepository;
+import by.project.service.entertainment.util.ObjectNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,17 +23,19 @@ public class PersonService {
 
 
     public Director findDirectorByName(String name) {
-        return directorRepository.findByName(name).orElse(null);
+        return directorRepository.findByName(name)
+                .orElseThrow(() -> new ObjectNotFoundException("Director not found by name: " + name));
     }
 
     public Person findPersonByName(String name) {
-        Optional<Person> person = personRepository.findByName(name);
-        return person.orElse(null);
+        return personRepository.findByName(name)
+                .orElseThrow(() -> new ObjectNotFoundException("Person not found by name: " + name));
+
     }
 
-    public Person findPersonById(Long id) {
-        Optional<Person> person = personRepository.findById(id);
-        return person.orElse(null);
+    public Person findOne(Long id) {
+        return personRepository.findById(id)
+                .orElseThrow(() -> new ObjectNotFoundException("Person not found by ID: " + id));
     }
 
 }

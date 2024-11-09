@@ -16,5 +16,8 @@
     <include file="create-table-event.xml" relativeToChangelogFile="true"/>
     <include file="create-table-user-event.xml" relativeToChangelogFile="true"/>
     <include file="create-table-person-entertainment.xml" relativeToChangelogFile="true"/>
+    <include file="remove-column-year.xml" relativeToChangelogFile="true"/>
+    <include file="modify-column-duration.xml" relativeToChangelogFile="true"/>
+    <include file="add-column-date_time.xml" relativeToChangelogFile="true"/>
 
 </databaseChangeLog>

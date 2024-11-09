@@ -19,7 +19,7 @@ import java.util.List;
 public class Place extends ObjectClass {
 
     @Min(value=1, message = "Capacity should be greater than 0")
-    private int capacity;
+    private Integer capacity;
 
     @OneToMany(mappedBy = "place")
     private List<Event> events;

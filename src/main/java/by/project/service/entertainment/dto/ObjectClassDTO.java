@@ -9,6 +9,8 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class ObjectClassDTO {
+
     @NotNull
     private String name;
+
 }

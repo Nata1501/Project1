@@ -38,17 +38,10 @@ public class EventValidator implements Validator {
     public void validate(Object target, Errors errors) {
         Event event = (Event) target;
 
-        // переделать
-        if (entertainmentService.findOne(event.getEntertainment().getId()) == null)
+        if (entertainmentService.findByName(event.getEntertainment().getName()) == null)
             errors.rejectValue("entertainment", "", "This entertainment does not exist");
 
-        // для чего эта проверка?
-        //        Date currentDate = new Date();        //     упростить (есть спец метод)
-        //        if (event.getDateTime().getTime() - currentDate.getTime() <= 1440)
-        //            errors.rejectValue("dateTime", "", "The time is not correct");
 
-
-        // Создаю переменную place, потому что позже она понадобится
         Place place = placeService.findPlaceByName(event.getPlace().getName());
         if (place == null)
             errors.rejectValue("place", "", "This place does not exist");
@@ -57,8 +50,9 @@ public class EventValidator implements Validator {
                 jdbcTemplate.queryForObject("SELECT id FROM Event WHERE id_place=? and date_time=?", Integer.class, place.getId(), event.getDateTime()).toString();
                 errors.rejectValue("dateTime", "", "The place and date are taken");
             } catch (EmptyResultDataAccessException e) {
-                throw new RuntimeException(e);
-               // непонятно, что вообще тут писать
+              //  throw new RuntimeException(e);
+              // А тут точно надо RuntimeException? Ведь если ничего не находится по запросу выше,
+              // то это значит, что можно сделать заказ...
             }
         }
     }

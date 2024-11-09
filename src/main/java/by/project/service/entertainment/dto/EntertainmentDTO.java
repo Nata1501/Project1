@@ -2,12 +2,15 @@ package by.project.service.entertainment.dto;
 
 import by.project.service.entertainment.models.domain.GenreType;
 import by.project.service.entertainment.models.domain.Type;
+import jakarta.persistence.Column;
 import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
+import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.List;
 
 
@@ -24,15 +27,13 @@ public class EntertainmentDTO {
     @Size(min=10, max=300, message = "Description should be between 10 and 300 characters")
     private String description;
 
-    @Min(value=1, message = "Duration should be greater than 0 minutes")
-    private double duration;
+    private Duration duration;
 
     @PositiveOrZero(message = "Price should be zero or more rubles")
     private BigDecimal price;
 
-    @Min(value=1895, message = "Year should be greater than 1895")
-    @Max(value=2024, message = "Year should not be greater than 2024")
-    private int year;
+    @PastOrPresent
+    private LocalDateTime dateTime;
 
     @NotNull
     private Type type;

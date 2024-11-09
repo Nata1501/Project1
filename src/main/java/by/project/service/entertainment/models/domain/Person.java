@@ -19,8 +19,8 @@ public class Person extends ObjectClass {
     @ManyToMany(cascade = {CascadeType.MERGE})
     @JoinTable(
         name = "person_entertainment",
-        joinColumns = @JoinColumn(name = "person_id"),
-        inverseJoinColumns = @JoinColumn(name = "entertainment_id"))
+        joinColumns = @JoinColumn(name = "id_person"),
+        inverseJoinColumns = @JoinColumn(name = "id_entertainment"))
     private List<Entertainment> entertainments;
 
 }

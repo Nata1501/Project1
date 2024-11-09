@@ -1,12 +1,14 @@
 package by.project.service.entertainment.controllers;
 
 
+import by.project.service.entertainment.dto.EntertainmentDTO;
 import by.project.service.entertainment.util.*;
 import by.project.service.entertainment.dto.UserDTO;
 import by.project.service.entertainment.models.domain.Order;
 import by.project.service.entertainment.models.domain.User;
 import by.project.service.entertainment.services.UserService;
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -21,82 +23,53 @@ import static by.project.service.entertainment.util.ErrorsUtil.returnErrorsToCli
 
 @RestController
 @RequestMapping("/users")
+@RequiredArgsConstructor
 public class UsersController {
 
     private final UserService userService;
     private final ModelMapper modelMapper;
-    private final UserValidator userValidator;
     private final OrderValidator orderValidator;
 
-
-    @Autowired
-    public UsersController(UserService userService, ModelMapper modelMapper, UserValidator userValidator, OrderValidator orderValidator) {
-        this.userService = userService;
-        this.modelMapper = modelMapper;
-        this.userValidator = userValidator;
-        this.orderValidator = orderValidator;
-    }
-
-
-
     @GetMapping()
-    public ResponseEntity<?> getUsers(@RequestParam(value = "page", required = false) Integer page,
-                                      @RequestParam(value = "users_per_page", required = false) Integer usersPerPage) {
-        List<User> users;
-
-        if ((page == null) || (usersPerPage == null))
-            users = userService.findAll();
-        else
-            users = userService.findAllWithPagination(page, usersPerPage);
-
-        return users != null &&  !users.isEmpty()
-                ? ResponseEntity.ok(users.stream().map(this::convertToUserDTO)
-                .collect(Collectors.toList()))
-                : ResponseEntity.ok().body(HttpStatus.NO_CONTENT);
+    public ResponseEntity<List<UserDTO>> getUsers(@RequestParam(value = "page", required = false) Integer page,
+                                                           @RequestParam(value = "users_per_page", required = false) Integer usersPerPage) {
+        List<User> users = userService.findAll(page, usersPerPage);
+        return ResponseEntity.ok(users.stream().map(this::convertToUserDTO).collect(Collectors.toList()));
     }
 
 
     @GetMapping("{id}")
-    public ResponseEntity<?> getUser(@PathVariable("id") Long id) {
-        User user = userService.findOne(id);
-        return user != null
-                ? ResponseEntity.ok(convertToUserDTO(user))
-                : ResponseEntity.notFound().build();
+    public ResponseEntity<UserDTO> getUser(@PathVariable("id") Long id) {
+        return ResponseEntity.ok(convertToUserDTO(userService.findOne(id)));
     }
 
 
     @PostMapping("/add")
-    public ResponseEntity<HttpStatus>  createUser(@RequestBody @Valid UserDTO userDTO, BindingResult bindingResult) {
-        userValidator.validate(userDTO, bindingResult);
-
+    public ResponseEntity<Void> createUser(@RequestBody @Valid UserDTO userDTO, BindingResult bindingResult) {
         if(bindingResult.hasErrors())
             returnErrorsToClient(bindingResult);
 
         userService.saveUser(convertToUser(userDTO));
-        return ResponseEntity.ok(HttpStatus.CREATED);
+        return ResponseEntity.ok().build();
     }
 
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<HttpStatus> delete(@PathVariable("id") Long id) {
-       try {
-            userService.delete(id);
-        } catch (ObjectNotFoundException e) {
-            return ResponseEntity.notFound().build();
-        }
+    public ResponseEntity<Void> delete(@PathVariable("id") Long id) {
+        userService.delete(id);
         return ResponseEntity.ok().build();
     }
 
 
     @PostMapping("/makeOrder")
-    public ResponseEntity<HttpStatus> createUser(@RequestBody Order order, BindingResult bindingResult) {
+    public ResponseEntity<Void> makeOrder(@RequestBody Order order, BindingResult bindingResult) {
         orderValidator.validate(order, bindingResult);
 
         if(bindingResult.hasErrors())
             returnErrorsToClient(bindingResult);
 
         userService.saveUserEvent(order);
-        return ResponseEntity.ok(HttpStatus.CREATED);
+        return ResponseEntity.ok().build();
     }
 
 
@@ -111,7 +84,7 @@ public class UsersController {
 
 
     @ExceptionHandler
-    private ResponseEntity<ErrorResponse> handleException(EntertainmentException e) {
+    private ResponseEntity<ErrorResponse> handleException(Exception e) {
         ErrorResponse response = new ErrorResponse(
                 e.getMessage(),
                 System.currentTimeMillis()
